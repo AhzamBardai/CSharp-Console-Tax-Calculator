@@ -4,16 +4,20 @@ using System.Collections.Generic;
 using global;
 using System.Linq;
 using System.ComponentModel;
+using static global.Global;
+using System.Text;
 
 namespace employeeTaxes {
 
     public static class EmployeeList {
         static List<EmployeeRecord> employees = new();
-
+        
         static EmployeeList() {
+            // to catch errors in static class since this runs before everything
+            List<Action> EmpErrors = new();
             try {
                 string file = @"Z:\Woz U\Projects\ADN102Final\finalProject\employeeTaxes\employees.csv";
-                StreamReader sr = new StreamReader(file);
+                using StreamReader sr = new StreamReader(file);
                 int line = 0;
                 while (!sr.EndOfStream) {
                     try {
@@ -22,60 +26,52 @@ namespace employeeTaxes {
                         employees.Add(employee);
                     }
                     catch (Exception e) {
-                        Global.ColorConsoleWriteLine("red", e.Message);
+                        EmpErrors.Add( () => ColorConsoleWriteLine("red", e.Message));
                     }   
                 }
                 sr.Close();
             }
             catch (Exception e) {
-                Global.ColorConsoleWriteLine("red", e.Message);
+                EmpErrors.Add( () => ColorConsoleWriteLine("red", e.Message));
+            }
+            finally {
+                Errors = Errors.Concat(EmpErrors).ToList();
             }
         }
 
         public static void ProcessAllEmplyees() {
+            Console.ResetColor();
             foreach (EmployeeRecord employee in employees) {
-                Global.ColorConsoleWriteLine("green", employee.ToString());
+                ColorConsoleWriteLine("green", employee.ToString());
             }
         }
 
         public static void ProcessAllEmplyees(string sortBy, bool asc = true) {
-            Global.LineBreak(0);
+            LineBreak(0);
             PropertyDescriptor pr = TypeDescriptor.GetProperties(typeof(EmployeeRecord)).Find(sortBy, true);
             IOrderedEnumerable<EmployeeRecord> sorted = 
                 asc ? employees.OrderBy(emp => pr.GetValue(emp)) : employees.OrderByDescending(emp => pr.GetValue(emp));
 
+            sortBy = SeperateToTitleCase(sortBy);
             string order = asc ? "Ascending" : "Descending";
             string heading = $"Sorted Employee Tax Records - {order}";
-            string subtitle = $"Sorted By: {pr.Name}";
-            Global.ColorConsoleWriteLine("dark cyan", $"{heading, 80}");
-            Global.ColorConsoleWriteLine("dark cyan", $"{subtitle, 69}");
-            SplitSingleCamelCase(ref sortBy);
+            string subtitle = $"Sorted By: {sortBy}";
+            ColorConsoleWriteLine("dark cyan", $"{heading, 80}");
+            ColorConsoleWriteLine("dark cyan", $"{subtitle, 69}");
             foreach (EmployeeRecord employee in sorted) {
                 string[] output = employee.ToString().Split("|", StringSplitOptions.RemoveEmptyEntries);
-                Global.ColorConsoleWrite("green", "|");
+                ColorConsoleWrite("green", "|");
                 foreach (string s in output) {
-                    if (s[1..s.IndexOf(":")].ToLower() == sortBy.ToLower()) {
-                        Global.ColorConsoleWrite("blue", $"{s}");
+                    if (s[1..s.IndexOf(":")].Replace(" ", "").ToLower() == sortBy.Replace(" ", "").ToLower()) {
+                        ColorConsoleWrite("blue", $"{s}");
                     }
-                    else if (s.IndexOf(":") > -1 && s[1..s.IndexOf(":")] == "Tax Due")
-                        Global.ColorConsoleWrite("green", s);
-                    else
-                        Global.ColorConsoleWrite("green", $"{s}");
-                    Global.ColorConsoleWrite("green", "|");
+                    else {
+                        ColorConsoleWrite("green", $"{s}");
+                    }
+                    ColorConsoleWrite("green", "|");
                 }
             }
-        }
-
-        public static void SplitSingleCamelCase( ref string str ) {
-            char[] checkUpper = str.ToCharArray();
-            int camelCase = 0;
-            for (int i = 0; i < checkUpper.Length; i++) {
-                if (char.IsUpper(checkUpper[i])) camelCase++;
-                if (camelCase >= 2) {
-                    str = str[0..i] + " " + str[i..str.Length];
-                    break;
-                }
-            }
+            LineBreak(0);
         }
 
     }

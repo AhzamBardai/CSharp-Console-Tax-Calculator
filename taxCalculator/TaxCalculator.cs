@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
-using global;
+using static global.Global;
 using System.ComponentModel;
 
 namespace taxCalculator {
@@ -12,9 +12,11 @@ namespace taxCalculator {
         public static Dictionary<string, List<TaxRecord>> record = new Dictionary<string, List<TaxRecord>>();
 
         static TaxCalculator() {
+            // to catch errors in static class since this runs before everything
+            List<Action> TaxErrors = new();
             try {
                 string file = @"Z:\Woz U\Projects\ADN102Final\finalProject\taxCalculator\taxtable.csv";
-                StreamReader sr = new StreamReader(file);
+                using StreamReader sr = new StreamReader(file);
                 int lineCount = 0;
                 while (!sr.EndOfStream) {
                     try {
@@ -29,14 +31,17 @@ namespace taxCalculator {
                         }
                     }
                     catch (Exception e) {
-                        Global.ColorConsoleWriteLine("red", e.Message);
+                        TaxErrors.Add(() => ColorConsoleWriteLine("red", e.Message));
                     }
 
                 }
                 sr.Close();
             }
             catch (Exception e) {
-                Global.ColorConsoleWriteLine("red", e.Message);
+                TaxErrors.Add(() => ColorConsoleWriteLine("red", e.Message));
+            }
+            finally {
+                Errors = Errors.Concat(TaxErrors).ToList();
             }
         }
 
@@ -44,7 +49,7 @@ namespace taxCalculator {
             decimal tax = 0M;
             try {
                 if (!record.ContainsKey(state)) 
-                    Global.BreakError<string>(15, $"State value provided is not available in the current records. Please try again. Received value {state}");
+                    BreakError<string>($"State value provided is not available in the current records. Please try again. Received value {state}");
                 else {
                     foreach (TaxRecord tr in record[state]) {
                         if (income > tr.Ceiling) {
@@ -58,7 +63,7 @@ namespace taxCalculator {
                 }
             }
             catch (Exception e) {
-                Global.ColorConsoleWriteLine("red", e.Message);
+                Errors.Add(() => ColorConsoleWriteLine("red", e.Message));
             }
             return tax;
         }
@@ -67,9 +72,10 @@ namespace taxCalculator {
             ComputeTaxFor(GetStateCode(state), income);
 
         public static void ViewAllRecords() {
+            Console.ResetColor();
             foreach (KeyValuePair<string, List<TaxRecord>> rec in record) {
                 foreach (TaxRecord t in rec.Value) {
-                    Global.ColorConsoleWriteLine("green", t.ToString());
+                    ColorConsoleWriteLine("green", t.ToString());
                 }
             }
         }
@@ -80,7 +86,7 @@ namespace taxCalculator {
             string brackets = "", c = code.ToUpper();
             if(code.Length > 2) c = GetStateCode(code);
             foreach (TaxRecord tr in record[c])
-                brackets += $"[ Floor: ${tr.Floor, 6} | Ceiling: ${tr.Ceiling, 11} | Rate: {tr.Rate, 6} ]\n";
+                brackets += $"[ Floor: {$"${tr.Floor}", 6} | Ceiling: ${$"${tr.Ceiling}", 11} | Rate: {tr.Rate, 6}% ]\n";
             return brackets;
         }
 
@@ -89,7 +95,7 @@ namespace taxCalculator {
             foreach (List<TaxRecord> tr in record.Values) 
                 if (tr[0].State.ToLower() == name.ToLower()) code = tr[0].StateCode;
             if (code == "") 
-                Global.BreakError<string>(15, $"State value provided is not available in the current records. Please try again. Received value {name}" );
+                BreakError<string>($"State value provided is not available in the current records. Please try again. Received value {name}" );
             return code;
 
         }

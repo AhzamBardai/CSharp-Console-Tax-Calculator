@@ -9,10 +9,6 @@ namespace employeeTaxes {
                 bool empCalcOpen = true;
                 do {
                     try {
-                        // ask verbose ---- Have not finished this yet
-                        //if (!RemoveVerbosePrompt) {
-                        //    VerboseVisible = ShowVerbose();
-                        //}
 
                         // get process choice
                         bool choice = WantSortedChoice();
@@ -23,11 +19,19 @@ namespace employeeTaxes {
                         }
                         else EmployeeList.ProcessAllEmplyees();
 
+                        // print Errors
+                        if (ErrorVisible) {
+                            foreach (var err in Errors) {
+                                LineBreak(15);
+                                err();
+                            }
+                        }
+
                         // keep employee calc open
                         KeepGoing("Would you like to keep using the Employee Tax Records?", ref empCalcOpen);
                     }
                     catch (Exception e) {
-                        ColorConsoleWriteLine("red", e.Message);
+                        Errors.Add(() => ColorConsoleWriteLine("red", e.Message));
                     }
 
                 } while (empCalcOpen);
@@ -46,12 +50,11 @@ namespace employeeTaxes {
             ColorConsoleWriteLine( "yellow" ,"Would you like the Employee Tax Records Sorted? \nEnter yes(Y) or no(N), Default is yes(Y)");
             string input = ColorConsoleReadLine("blue").ToUpper();
             if (input == "NO" || input == "N") return false;
-            else if (input == "") {
+            else {
                 ColorConsoleWrite("magenta", "==> ");
                 ColorConsoleWriteLine("blue", "Yes");
                 return true;
             }
-            else return true;
         }
 
         public static bool AscOrDesc() {
@@ -66,12 +69,11 @@ namespace employeeTaxes {
             while (!int.TryParse(choice, out pick) && (pick == 1 || pick == 2)) 
                 ColorConsoleWriteLine("yellow", "Please Enter the Number of the options above to move forward.");
             if(pick == 2) return false;
-            else if (choice == "") {
+            else {
                 ColorConsoleWrite("magenta", "==> ");
                 ColorConsoleWriteLine("blue", "1 - Ascending");
                 return true;
             }
-            else return true;
         }
 
         public static string PrintSortOptions() {
@@ -81,18 +83,19 @@ namespace employeeTaxes {
             foreach (string option in Enum.GetNames(typeof(SortOptions))) {
                 c++;
                 ColorConsoleWrite("magenta", $"==> {c} - ");
-                ColorConsoleWriteLine("yellow", $"{option}");
+                ColorConsoleWriteLine("yellow", $"{SeperateToTitleCase(option)}");
             }
             string choice;
             do {
-                string input = ColorConsoleReadLine("blue");
+                string input = ColorConsoleReadLine("blue").Trim().ToLower();
                 if (int.TryParse(input, out int i)) input = $"{i-1}";
                 if (Enum.TryParse(typeof(SortOptions), input, true, out object s)) {
                     choice = s.ToString();
                     break;
                 }
                 else {
-                    ColorConsoleWriteLine("yellow", "Please Enter a number within the limit of options.(1-5) or type in the option exactly as it is in the options.");
+                    ColorConsoleWriteLine("dark yellow", "Please Enter a number within the limit of options(1-5) or type in the option letter to letter as listed above.");
+                    Console.WriteLine();
                     continue;
                 }
             } while (true);
