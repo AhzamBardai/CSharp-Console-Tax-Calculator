@@ -1,11 +1,9 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using global;
 using System.Linq;
 using System.ComponentModel;
 using static global.Global;
-using System.Text;
 
 namespace employeeTaxes {
 
