@@ -38,7 +38,6 @@ namespace employeeTaxes {
         }
 
         public static void ProcessAllEmplyees() {
-            Console.ResetColor();
             foreach (EmployeeRecord employee in employees) {
                 ColorConsoleWriteLine("green", employee.ToString());
             }

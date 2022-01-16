@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using static global.Global;
 using System.ComponentModel;
+using global;
 
 namespace taxCalculator {
 
@@ -48,8 +49,8 @@ namespace taxCalculator {
         public static decimal ComputeTaxFor( string state, long income ) {
             decimal tax = 0M;
             try {
-                if (!record.ContainsKey(state)) 
-                    BreakError<string>($"State value provided is not available in the current records. Please try again. Received value {state}");
+                if (!record.ContainsKey(state))
+                    ColorConsoleWriteLine("dark yellow", $"State value provided is not available in the current records. Please try again. Received value {state}");
                 else {
                     foreach (TaxRecord tr in record[state]) {
                         if (income > tr.Ceiling) {
@@ -72,7 +73,12 @@ namespace taxCalculator {
             ComputeTaxFor(GetStateCode(state), income);
 
         public static void ViewAllRecords() {
-            Console.ResetColor();
+            // print verbose
+            if (VerboseVisible) {
+                ColorConsoleWriteLine("dark yellow", VerboseOptions.RecordsIntro);
+            }
+            ColorConsoleWriteLine("dark cyan", $"{"All Tax Records",65}");
+            Console.WriteLine();
             foreach (KeyValuePair<string, List<TaxRecord>> rec in record) {
                 foreach (TaxRecord t in rec.Value) {
                     ColorConsoleWriteLine("green", t.ToString());
@@ -80,7 +86,7 @@ namespace taxCalculator {
             }
         }
 
-        public static string GetStateName( string code ) => record[code][0].State;
+        public static string GetStateName( string code ) => record.ContainsKey(code) ? record[code][0].State : BreakError<string>($"State value provided is not available in the current records. Please try again. Received value '{code.ToLower()}'");
 
         public static string GetBrackets(string code) {
             string brackets = "", c = code.ToUpper();
@@ -94,8 +100,8 @@ namespace taxCalculator {
             string code = "";
             foreach (List<TaxRecord> tr in record.Values) 
                 if (tr[0].State.ToLower() == name.ToLower()) code = tr[0].StateCode;
-            if (code == "") 
-                BreakError<string>($"State value provided is not available in the current records. Please try again. Received value {name}" );
+            if (code == "")
+                ColorConsoleWriteLine("dark yellow", $"State value provided is not available in the current records. Please try again. Received value {name}" );
             return code;
 
         }

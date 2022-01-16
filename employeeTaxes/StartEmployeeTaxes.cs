@@ -7,8 +7,23 @@ namespace employeeTaxes {
         public static void Main() {
             try {
                 bool empCalcOpen = true;
+                ColorConsoleWriteLine("dark cyan", $"{"Employee Taxes",65}");
                 do {
                     try {
+
+                        // print verbose
+                        if (VerboseVisible) {
+                            ColorConsoleWriteLine("dark yellow", VerboseOptions.EmpIntro);
+                        }
+
+                        // print Errors
+                        if (ErrorVisible) {
+                            foreach (var err in Errors) {
+                                LineBreak(15);
+                                err();
+                            }
+                            Errors.Clear();
+                        }
 
                         // get process choice
                         bool choice = WantSortedChoice();
@@ -19,16 +34,8 @@ namespace employeeTaxes {
                         }
                         else EmployeeList.ProcessAllEmplyees();
 
-                        // print Errors
-                        if (ErrorVisible) {
-                            foreach (var err in Errors) {
-                                LineBreak(15);
-                                err();
-                            }
-                        }
-
                         // keep employee calc open
-                        KeepGoing("Would you like to keep using the Employee Tax Records?", ref empCalcOpen);
+                        KeepGoing("Would you like to keep using the Employee Tax Records?", ref empCalcOpen, "Employee Taxes");
                     }
                     catch (Exception e) {
                         Errors.Add(() => ColorConsoleWriteLine("red", e.Message));

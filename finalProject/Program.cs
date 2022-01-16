@@ -2,6 +2,7 @@
 using taxCalculator;
 using employeeTaxes;
 using static global.Global;
+using global;
 
 namespace finalProject
 {
@@ -28,30 +29,37 @@ namespace finalProject
                             Console.WriteLine();
                         }
 
+                        // show intro text
+                        if (VerboseVisible) {
+                            ColorConsoleWriteLine("dark yellow", VerboseOptions.Intro);
+                        }
+
                         // evaluate choice
                         int choice = GetChoice();
+                        Console.ResetColor();
                         switch (choice) {
                             case 1: StartTaxCalculator.Main(); break;
-                            case 2: TaxCalculator.ViewAllRecords(); break;
+                            case 2: StartTaxCalculator.GetRecords(); break;
                             case 3: StartEmployeeTaxes.Main(); break;
                             default: StartTaxCalculator.Main(); break;
                         }
 
+                        // prompt to try again
+                        KeepGoing("Would you like to keep using the program?", ref progOpen, "Main Program");
 
+                    }
+                    catch (Exception e) {
+                        Errors.Add(() => ColorConsoleWriteLine("red", e.Message));
+                    }
+                    finally {
                         // print Errors
                         if (ErrorVisible) {
                             foreach (var err in Errors) {
                                 LineBreak(15);
                                 err();
                             }
+                            Errors.Clear();
                         }
-
-                        // prompt to try again
-                        KeepGoing("Would you like to keep using the program?", ref progOpen);
-
-                    }
-                    catch (Exception e) {
-                        Errors.Add(() => ColorConsoleWriteLine("red", e.Message));
                     }
 
                 } while (progOpen);

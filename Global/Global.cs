@@ -125,9 +125,10 @@ namespace global {
             return false;
         }
 
-        public static void KeepGoing( string text, ref bool toggle ) {
+        public static void KeepGoing( string text, ref bool toggle, string current ) {
             LineBreak(0);
-            ColorConsoleWriteLine("dark yellow", $"{text} \nPress Any Key to keep going or type 'no' or 'n' to Exit");
+            ColorConsoleWrite("dark yellow", $"{text} \nPress Any Key to keep going or type 'no' or 'n' to Exit. Current Part of the app you are using: ");
+            ColorConsoleWriteLine("dark cyan", current);
             string choice = ColorConsoleReadLine("blue").ToUpper();
             if (choice == "N" || choice == "NO") toggle = false;
             else if (choice == "") {
