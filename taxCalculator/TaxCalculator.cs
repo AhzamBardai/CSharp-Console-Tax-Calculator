@@ -73,10 +73,6 @@ namespace taxCalculator {
             ComputeTaxFor(GetStateCode(state), income);
 
         public static void ViewAllRecords() {
-            // print verbose
-            if (VerboseVisible) {
-                ColorConsoleWriteLine("dark yellow", VerboseOptions.RecordsIntro);
-            }
             ColorConsoleWriteLine("dark cyan", $"{"All Tax Records",65}");
             Console.WriteLine();
             foreach (KeyValuePair<string, List<TaxRecord>> rec in record) {
